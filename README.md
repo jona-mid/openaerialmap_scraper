@@ -75,8 +75,6 @@ Downloads thumbnails from `results_gee_filtered.csv` using the filename from the
 5. Adds delay between downloads to avoid overwhelming the server
 6. Logs all actions to `thumbnail_download.log`
 
-**Output:** Thumbnails saved to `thumbnails/` folder with original filenames, log file `thumbnail_download.log`
-
 ### Step 4: Manual Review
 
 Review thumbnails in `thumbnails/` folder and keep only desired images.
@@ -92,7 +90,6 @@ Finds exact duplicate thumbnails by comparing file content (MD5 hash).
 Options:
 - `--thumbnails-dir`: Thumbnails directory (default: `thumbnails/`)
 - `--remove`: Remove duplicate files (keeps first one)
-- `--output`: Save duplicate list to file
 
 Example:
 ```bash
