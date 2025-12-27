@@ -80,6 +80,31 @@ Downloads thumbnails from `results_gee_filtered.csv` using the filename from the
 
 Review thumbnails in `thumbnails/` folder and keep only desired images.
 
+**Find and remove exact duplicate thumbnails:**
+
+```bash
+python find_duplicate_thumbnails.py
+```
+
+Finds exact duplicate thumbnails by comparing file content (MD5 hash).
+
+Options:
+- `--thumbnails-dir`: Thumbnails directory (default: `thumbnails/`)
+- `--remove`: Remove duplicate files (keeps first one)
+- `--output`: Save duplicate list to file
+
+Example:
+```bash
+# Just find duplicates
+python find_duplicate_thumbnails.py
+
+# Find and remove duplicates
+python find_duplicate_thumbnails.py --remove
+
+# Save duplicate list to file
+python find_duplicate_thumbnails.py --output duplicates.txt
+```
+
 ### Step 5: Download TIF Files
 
 ```bash
@@ -112,7 +137,8 @@ openaerialmap_scraper/
 ├── scrape.py                    # Step 1: Scrape metadata
 ├── filter_openaerial_images.py  # Step 2: Filter by criteria
 ├── download_thumbnails.py       # Step 3: Download thumbnails
-├── download_tifs.py             # Step 4: Download TIF files
+├── find_duplicate_thumbnails.py # Step 4: Find duplicate thumbnails
+├── download_tifs.py             # Step 5: Download TIF files
 ├── esa_worldcover.py            # ESA WorldCover utilities
 ├── requirements.txt             # Dependencies
 └── README.md                    # This file
