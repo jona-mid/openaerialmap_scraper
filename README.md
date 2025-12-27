@@ -101,9 +101,6 @@ python find_duplicate_thumbnails.py
 
 # Find and remove duplicates
 python find_duplicate_thumbnails.py --remove
-
-# Save duplicate list to file
-python find_duplicate_thumbnails.py --output duplicates.txt
 ```
 
 ### Step 5: Download TIF Files
