@@ -38,11 +38,12 @@ python filter_openaerial_images.py
 
 Filters by:
 - Resolution: < 10 cm GSD
-- Date: Uploaded after 2024-04-01
-- Platform: UAV only
+- Date: Uploaded after YYYY-MM-DD
+- Platform: UAV or aircraft
 - Forest cover: Calculated using ESA WorldCover via Google Earth Engine
-  - Before April 2025: 0% < forest ≤ 30%
-  - After April 2025: forest > 0%
+  - Default:
+    - Before April 2025: 0% < forest ≤ 30%
+    - After April 2025: forest > 0%
 
 Output: `results_gee_filtered.csv`
 
