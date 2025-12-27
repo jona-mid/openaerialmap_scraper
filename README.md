@@ -52,10 +52,10 @@ Output: `results_gee_filtered.csv`
 python download_thumbnails.py
 ```
 
-Downloads thumbnails from `results_gee_filtered.csv` using `_id` as filename.
+Downloads thumbnails from `results_gee_filtered.csv` using the filename from the URL (keeps original name).
 
 **Features:**
-- Uses `_id` column as filename for each thumbnail
+- Uses filename from thumbnail URL (preserves original name)
 - Skips already downloaded thumbnails automatically
 - Resumable - can be stopped and restarted
 - Server-friendly with logging and error handling
@@ -67,13 +67,14 @@ Downloads thumbnails from `results_gee_filtered.csv` using `_id` as filename.
 - `--delay`: Delay between downloads in seconds (default: 0.1)
 
 **How it works:**
-1. Reads CSV and identifies `_id` and `property_thumbnail` columns
-2. Checks target folder for existing thumbnails
-3. Downloads only missing thumbnails using `_id` as filename
-4. Adds delay between downloads to avoid overwhelming the server
-5. Logs all actions to `thumbnail_download.log`
+1. Reads CSV and identifies `property_thumbnail` column
+2. Extracts filename from each thumbnail URL
+3. Checks target folder for existing thumbnails
+4. Downloads only missing thumbnails with original filenames
+5. Adds delay between downloads to avoid overwhelming the server
+6. Logs all actions to `thumbnail_download.log`
 
-**Output:** Thumbnails saved to `thumbnails/` folder, log file `thumbnail_download.log`
+**Output:** Thumbnails saved to `thumbnails/` folder with original filenames, log file `thumbnail_download.log`
 
 ### Step 4: Manual Review
 
@@ -122,7 +123,7 @@ openaerialmap_scraper/
 - `openaerial_data.csv` - Raw scraped metadata
 - `openaerial_data_filtered.csv` - After initial filtering (GSD/date/platform)
 - `results_gee_filtered.csv` - Final filtered results with forest percentages
-- `thumbnails/*.png` - Thumbnail images (filename = `_id`)
+- `thumbnails/*.png` - Thumbnail images (original filename from URL)
 - `tifs/*.tif` - Downloaded TIF files
 
 ## Requirements
