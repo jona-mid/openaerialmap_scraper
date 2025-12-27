@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+thumbnails/
+tifs/
+*.parquet
+*.log
+
