@@ -137,12 +137,27 @@ def main(csv_file, thumbnails_dir, output_dir, delay=0.5, metadata_output=None):
     skipped_count = 0
     not_found_count = 0
     
-    # Initialize metadata list for successfully downloaded files
-    metadata_list = []
-    
     # Set default metadata output path
     if metadata_output is None:
         metadata_output = os.path.join(output_dir, "tif_metadata.csv")
+    
+    # Load existing metadata CSV if it exists
+    existing_metadata = {}
+    existing_filenames = set()
+    if os.path.exists(metadata_output):
+        try:
+            existing_df = pd.read_csv(metadata_output)
+            if 'filename' in existing_df.columns:
+                for _, existing_row in existing_df.iterrows():
+                    filename = existing_row['filename']
+                    existing_metadata[filename] = existing_row.to_dict()
+                    existing_filenames.add(filename)
+                logger.info(f"Loaded {len(existing_filenames)} existing metadata entries from {metadata_output}")
+        except Exception as e:
+            logger.warning(f"Could not load existing metadata CSV: {e}")
+    
+    # Initialize metadata list for all TIF files in directory
+    metadata_list = []
     
     for base_name, thumbnail_file in thumbnail_bases.items():
         # Find matching row in CSV where uuid contains the base name
@@ -166,26 +181,16 @@ def main(csv_file, thumbnails_dir, output_dir, delay=0.5, metadata_output=None):
         
         output_path = os.path.join(output_dir, tif_filename)
         
-        # Skip if already exists
-        if os.path.exists(output_path):
-            logger.info(f"File already exists, skipping: {tif_filename}")
-            skipped_count += 1
-            continue
-        
-        # Download TIF
-        logger.info(f"Downloading {tif_filename}...")
-        if download_tif(tif_url, output_path):
-            downloaded_count += 1
-            
-            # Extract metadata for successfully downloaded file
+        # Helper function to create metadata entry
+        def create_metadata_entry(row, filename):
+            """Create metadata entry from CSV row and filename."""
             authors = extract_author(row)
             capture_date = row.get('acquisition_start', '') if pd.notna(row.get('acquisition_start')) else ''
             platform = row.get('platform', '') if pd.notna(row.get('platform')) else ''
             long_campaign = is_long_campaign(row)
             
-            # Create metadata dictionary with custom fields first
             metadata_entry = {
-                'filename': tif_filename,
+                'filename': filename,
                 'authors': authors,
                 'capture_date': capture_date,
                 'platform': platform,
@@ -202,9 +207,30 @@ def main(csv_file, thumbnails_dir, output_dir, delay=0.5, metadata_output=None):
                     else:
                         metadata_entry[col] = value
             
-            metadata_list.append(metadata_entry)
+            return metadata_entry
+        
+        # Check if file already exists
+        file_exists = os.path.exists(output_path)
+        
+        if file_exists:
+            logger.info(f"File already exists, skipping download: {tif_filename}")
+            skipped_count += 1
+            
+            # Add metadata if not already in existing metadata
+            if tif_filename not in existing_filenames:
+                metadata_entry = create_metadata_entry(row, tif_filename)
+                metadata_list.append(metadata_entry)
         else:
-            failed_count += 1
+            # Download TIF
+            logger.info(f"Downloading {tif_filename}...")
+            if download_tif(tif_url, output_path):
+                downloaded_count += 1
+                
+                # Add metadata for newly downloaded file
+                metadata_entry = create_metadata_entry(row, tif_filename)
+                metadata_list.append(metadata_entry)
+            else:
+                failed_count += 1
         
         # Delay between downloads
         if delay > 0:
@@ -217,17 +243,30 @@ def main(csv_file, thumbnails_dir, output_dir, delay=0.5, metadata_output=None):
     logger.info(f"Not found in CSV: {not_found_count}")
     logger.info(f"Total processed: {downloaded_count + failed_count + skipped_count + not_found_count}")
     
-    # Generate metadata CSV if we have downloaded files
-    if metadata_list:
-        try:
+    # Merge existing and new metadata
+    try:
+        # Add all existing metadata entries
+        for filename, existing_entry in existing_metadata.items():
+            metadata_list.append(existing_entry)
+        
+        if metadata_list:
+            # Create DataFrame and remove duplicates (keep last occurrence, which would be newly added/updated)
             metadata_df = pd.DataFrame(metadata_list)
+            # Remove duplicates based on filename, keeping the last occurrence
+            metadata_df = metadata_df.drop_duplicates(subset='filename', keep='last')
+            # Sort by filename for consistency
+            metadata_df = metadata_df.sort_values('filename').reset_index(drop=True)
+            
             metadata_df.to_csv(metadata_output, index=False)
             logger.info(f"\nMetadata CSV saved: {metadata_output}")
-            logger.info(f"Metadata entries: {len(metadata_list)}")
-        except Exception as e:
-            logger.error(f"Failed to save metadata CSV: {e}")
-    else:
-        logger.info("\nNo metadata to save (no files downloaded)")
+            logger.info(f"Total metadata entries: {len(metadata_df)}")
+            if len(metadata_list) > len(existing_filenames):
+                new_entries = len(metadata_list) - len(existing_filenames)
+                logger.info(f"Added {new_entries} new metadata entries")
+        else:
+            logger.info("\nNo metadata to save")
+    except Exception as e:
+        logger.error(f"Failed to save metadata CSV: {e}")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Download TIF files based on thumbnail filenames")
