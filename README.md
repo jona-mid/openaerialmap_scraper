@@ -114,17 +114,6 @@ Options:
 - `--output-dir`: Output directory for TIFs (default: `tifs/`)
 - `--delay`: Delay between downloads in seconds (default: 0.5)
 
-## Server Usage
-
-For long-running downloads, run scripts on a Linux server:
-
-```bash
-ssh js1619@10.9.7.15
-cd /path/to/project
-python download_thumbnails.py
-python download_tifs.py --output-dir /path/to/large/storage
-```
-
 ## File Structure
 
 ```
@@ -149,7 +138,6 @@ openaerialmap_scraper/
 
 ## Requirements
 
-- Python 3.x
 - pandas
 - requests
 - earthengine-api
