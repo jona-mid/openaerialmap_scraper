@@ -185,7 +185,17 @@ def main(csv_file, thumbnails_dir, output_dir, delay=0.5, metadata_output=None):
         def create_metadata_entry(row, filename):
             """Create metadata entry from CSV row and filename."""
             authors = extract_author(row)
-            capture_date = row.get('acquisition_start', '') if pd.notna(row.get('acquisition_start')) else ''
+            
+            # Extract and format capture_date as YYYY-MM-DD only
+            capture_date = ''
+            if 'acquisition_start' in row and pd.notna(row.get('acquisition_start')):
+                try:
+                    date_obj = pd.to_datetime(row['acquisition_start'], errors='coerce')
+                    if pd.notna(date_obj):
+                        capture_date = date_obj.strftime('%Y-%m-%d')
+                except Exception:
+                    capture_date = ''
+            
             platform = row.get('platform', '') if pd.notna(row.get('platform')) else ''
             long_campaign = is_long_campaign(row)
             
