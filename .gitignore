@@ -4,4 +4,4 @@ thumbnails/
 tifs/
 *.parquet
 *.log
-
+*.csv
