@@ -44,13 +44,9 @@ def download_tif(url, output_path):
 def extract_author(row):
     """
     Extract author name from CSV row.
-    Priority: provider -> contact (name part only) -> "openaerialmap.org"
+    Priority: contact (name part only) -> provider -> "openaerialmap.org"
     """
-    # Try provider first
-    if 'provider' in row and pd.notna(row['provider']) and str(row['provider']).strip():
-        return str(row['provider']).strip()
-    
-    # Try contact (extract name part before comma)
+    # Try contact first (extract name part before comma)
     if 'contact' in row and pd.notna(row['contact']) and str(row['contact']).strip():
         contact_str = str(row['contact']).strip()
         if ',' in contact_str:
@@ -61,6 +57,10 @@ def extract_author(row):
         else:
             # No comma, use whole string
             return contact_str
+    
+    # Fallback to provider
+    if 'provider' in row and pd.notna(row['provider']) and str(row['provider']).strip():
+        return str(row['provider']).strip()
     
     # Default fallback
     return "openaerialmap.org"
